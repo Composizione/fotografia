@@ -102,7 +102,7 @@ input[type=search]{width:100%;background:var(--card);border:1px solid var(--line
 </style>
 </head>
 <body>
-<header><h1>Composizione</h1><span id="sub"></span></header>
+<header><h1>Composizione</h1><span id="sub"></span><span id="ver" style="margin-left:auto"></span></header>
 <main id="view"></main>
 <nav class="tabs" id="tabs"></nav>
 <div id="detail"></div>
@@ -293,6 +293,7 @@ const STEPS=[
 ];
 /* ============ STATO ============ */
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const VERSION='1.2';
 let favs=new Set(store.get('fav',[]));
 let sel=new Set(store.get('sel',[]));
 let done=new Set(store.get('done',[]));
@@ -479,6 +480,7 @@ function openDetail(id,silent){
 }
 function closeDetail(){$('#detail').classList.remove('open');currentDetail=null;freeUrls()}
 window.addEventListener('popstate',()=>{ if(history.state&&history.state.d){openDetail(history.state.d,true)}else closeDetail() });
+$('#ver').textContent='v'+VERSION;
 renderTabs();render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
