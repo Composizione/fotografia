@@ -77,6 +77,19 @@ input[type=search]{width:100%;background:var(--card);border:1px solid var(--line
 .step b{display:block}
 .step small{color:var(--mut)}
 .empty{color:var(--mut);text-align:center;padding:24px 0}
+/* foto */
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0}
+.ph-grid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;background:#161b1f}
+.ph-add{display:flex;align-items:center;justify-content:center;aspect-ratio:1;border:2px dashed var(--line);border-radius:10px;color:var(--ac);font-size:.8rem;text-align:center;cursor:pointer;flex-direction:column;gap:2px}
+.ph-add b{font-size:1.5rem;line-height:1}
+.ex{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ex a{flex:1;min-width:140px;text-align:center;background:var(--card);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:10px;text-decoration:none;font-size:.88rem}
+#viewer{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:40;display:none;flex-direction:column}
+#viewer.open{display:flex}
+#viewer img{flex:1;min-height:0;width:100%;object-fit:contain}
+#viewer .bar{display:flex;justify-content:space-between;padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+#viewer button{background:var(--card);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font:inherit}
+#viewer button.del{color:#ff8a80}
 /* diagrams */
 .fr{fill:none;stroke:#47525b;stroke-width:1}
 .g{stroke:var(--ac);stroke-width:.8;stroke-dasharray:3 2;fill:none;opacity:.85}
@@ -93,6 +106,7 @@ input[type=search]{width:100%;background:var(--card);border:1px solid var(--line
 <main id="view"></main>
 <nav class="tabs" id="tabs"></nav>
 <div id="detail"></div>
+<div id="viewer"><img id="vimg" alt=""><div class="bar"><button id="vcl">Chiudi</button><button class="del" id="vdel">Elimina</button></div></div>
 
 <script>
 /* ============ DIAGRAMMI (viewBox 120x80) ============ */
@@ -395,6 +409,47 @@ function render(){
  $('#sub').textContent={guida:'cosa fare in questa scena',tecniche:T.length+' tecniche',mirino:'griglie sulla scena',check:'controllo rapido'}[tab];
  ({guida:viewGuida,tecniche:viewTecniche,mirino:viewMirino,check:viewCheck})[tab]();
 }
+/* ---- Foto (IndexedDB, solo sul telefono) ---- */
+const SQ={terzi:'rule of thirds',simmetria:'symmetry architecture',linee:'leading lines',ripetizioni:'repeating patterns',riempire:'frame filling close-up',negativo:'negative space minimalist',primopiano:'foreground landscape',incorniciare:'natural frame photography',dof:'shallow depth of field portrait',punto:'low angle photography',aurea:'golden ratio composition',diagonali:'diagonal lines composition',sguardo:'portrait looking space',orizzonte:'horizon landscape',livelli:'landscape layers foreground',pattern:'pattern one different',bilancio:'visual balance composition',curva:'s curve road',silhouette:'silhouette sunset',bordi:'clean background portrait',scala:'person small mountain scale',triangoli:'triangle composition'};
+const PDB={
+ open(){return new Promise((res,rej)=>{const r=indexedDB.open('composizione',1);r.onupgradeneeded=()=>{const st=r.result.createObjectStore('photos',{keyPath:'id',autoIncrement:true});st.createIndex('tech','tech')};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})},
+ async add(tech,blob){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('photos','readwrite');tx.objectStore('photos').add({tech,blob,ts:Date.now()});tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})},
+ async list(tech){const db=await this.open();return new Promise((res,rej)=>{const rq=db.transaction('photos').objectStore('photos').index('tech').getAll(tech);rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error)})},
+ async del(id){const db=await this.open();return new Promise((res,rej)=>{const tx=db.transaction('photos','readwrite');tx.objectStore('photos').delete(id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
+};
+async function shrink(file,max=1100){
+ let bmp;
+ try{bmp=await createImageBitmap(file)}catch(e){
+  bmp=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(file)});
+ }
+ const w=bmp.width,h=bmp.height,k=Math.min(1,max/Math.max(w,h));
+ const c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);
+ c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+ return new Promise(res=>c.toBlob(b=>res(b),'image/jpeg',.85));
+}
+let urls=[];
+function freeUrls(){urls.forEach(u=>URL.revokeObjectURL(u));urls=[]}
+async function loadPhotos(id){
+ const box=$('#myph'); if(!box)return;
+ let items=[];
+ try{items=await PDB.list(id)}catch(e){box.innerHTML='<p class="hint">Archivio foto non disponibile su questo browser.</p>';return}
+ if(currentDetail!==id)return;
+ freeUrls();
+ const th=items.map(it=>{const u=URL.createObjectURL(it.blob);urls.push(u);return `<img src="${u}" data-pid="${it.id}" alt="La mia foto">`}).join('');
+ box.innerHTML=`<div class="ph-grid">${th}<label class="ph-add"><b>+</b>Aggiungi foto<input type="file" id="pin" accept="image/*" multiple hidden></label></div>`;
+ box.querySelectorAll('img').forEach(im=>im.onclick=()=>openViewer(im.src,+im.dataset.pid,id));
+ $('#pin').onchange=async e=>{
+  const files=[...e.target.files]; if(!files.length)return;
+  box.insertAdjacentHTML('beforeend','<p class="hint">Salvo…</p>');
+  for(const f of files){try{await PDB.add(id,await shrink(f))}catch(err){}}
+  loadPhotos(id);
+ };
+}
+let vctx=null;
+function openViewer(src,pid,tech){vctx={pid,tech};$('#vimg').src=src;$('#viewer').classList.add('open')}
+function closeViewer(){$('#viewer').classList.remove('open');vctx=null}
+$('#vcl').onclick=closeViewer;
+$('#vdel').onclick=async()=>{if(!vctx)return;if(!confirm('Eliminare questa foto?'))return;const c=vctx;await PDB.del(c.pid);closeViewer();loadPhotos(c.tech)};
 /* ---- Dettaglio ---- */
 let currentDetail=null;
 function openDetail(id,silent){
@@ -405,6 +460,9 @@ function openDetail(id,silent){
  <div class="dbody"><h2 style="margin:4px 0 2px;font-size:1.3rem">${esc(t.n)}<span class="badge ${t.art?'art':'ext'}">${t.art?'articolo':'extra'}</span></h2>
  <div class="big">${DIAG[id]}</div>
  <div class="quick"><b>Fallo ora:</b> ${esc(t.quick)}</div>
+ <div class="sec"><h3>Esempi</h3><div id="myph"></div>
+  <div class="ex"><a href="https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(SQ[id]||t.n)}&ns6=1" target="_blank" rel="noopener">Vedi esempi · Wikimedia</a><a href="https://unsplash.com/s/photos/${encodeURIComponent((SQ[id]||t.n).replace(/ /g,'-'))}" target="_blank" rel="noopener">Vedi esempi · Unsplash</a></div>
+  <p class="hint" style="margin-top:8px">«Aggiungi foto»: le tue immagini restano solo su questo telefono. I link richiedono internet.</p></div>
  <div class="sec"><h3>Cos'è</h3><p>${esc(t.desc)}</p></div>
  <div class="sec"><h3>Quando usarla</h3><p>${esc(t.when)}</p></div>
  <div class="sec"><h3>Consigli</h3><ul>${t.tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
@@ -417,8 +475,9 @@ function openDetail(id,silent){
  $('#fv').onclick=()=>toggleFav(id);
  $('#detail').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{openDetail(b.dataset.r);$('#detail').scrollTop=0});
  $('#detail').scrollTop=0;
+ loadPhotos(id);
 }
-function closeDetail(){$('#detail').classList.remove('open');currentDetail=null}
+function closeDetail(){$('#detail').classList.remove('open');currentDetail=null;freeUrls()}
 window.addEventListener('popstate',()=>{ if(history.state&&history.state.d){openDetail(history.state.d,true)}else closeDetail() });
 renderTabs();render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
