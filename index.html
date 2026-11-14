@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1214">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Composizione</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+:root{--bg:#0f1214;--card:#1a1f23;--card2:#232a30;--line:#2f373e;--tx:#eef1f3;--mut:#9aa6b0;--ac:#f5b942;--ac2:#ffd98a;--ok:#6fcf97;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{display:flex;flex-direction:column;overflow:hidden}
+header{padding:calc(10px + env(safe-area-inset-top)) 16px 8px;display:flex;align-items:baseline;gap:10px}
+header h1{margin:0;font-size:1.25rem;letter-spacing:.2px}
+header span{color:var(--mut);font-size:.82rem}
+main{flex:1;overflow-y:auto;padding:4px 14px 24px;-webkit-overflow-scrolling:touch}
+.tabs{display:flex;background:#12161a;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabs button{flex:1;background:none;border:0;color:var(--mut);padding:9px 2px 8px;font:inherit;font-size:.72rem;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabs button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs button.on{color:var(--ac)}
+h2{font-size:1.05rem;margin:14px 0 8px}
+.hint{color:var(--mut);font-size:.88rem;margin:0 0 10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--card);border:1px solid var(--line);color:var(--tx);border-radius:999px;padding:9px 14px;font:inherit;font-size:.92rem}
+.chip.on{background:var(--ac);color:#1b1400;border-color:var(--ac);font-weight:600}
+.clear{background:none;border:0;color:var(--mut);font:inherit;font-size:.85rem;text-decoration:underline;padding:8px 4px}
+.card{display:flex;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;margin:0 0 10px;width:100%;text-align:left;color:inherit;font:inherit;align-items:center}
+.card:active{background:var(--card2)}
+.thumb{flex:0 0 96px}
+.thumb svg,.big svg{overflow:hidden;display:block;width:100%;height:auto;border-radius:8px;background:#161b1f}
+.card .t{font-weight:650}
+.card .d{color:var(--mut);font-size:.85rem;margin-top:2px}
+.badge{display:inline-block;font-size:.66rem;border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:middle;font-weight:600}
+.badge.art{background:#2b3a2f;color:var(--ok)}
+.badge.ext{background:#3a3220;color:var(--ac2)}
+.star{margin-left:auto;font-size:1.3rem;color:var(--mut);background:none;border:0;padding:6px}
+.star.on{color:var(--ac)}
+input[type=search]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;color:var(--tx);padding:11px 14px;font:inherit;margin:4px 0 10px}
+.seg{display:flex;gap:6px;margin-bottom:10px}
+.seg button{flex:1;background:var(--card);border:1px solid var(--line);color:var(--mut);border-radius:10px;padding:8px;font:inherit;font-size:.85rem}
+.seg button.on{color:var(--ac);border-color:var(--ac)}
+/* detail */
+#detail{position:fixed;inset:0;background:var(--bg);z-index:20;overflow-y:auto;transform:translateY(100%);transition:transform .22s ease;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+#detail.open{transform:none}
+.dtop{position:sticky;top:0;background:rgba(15,18,20,.94);backdrop-filter:blur(6px);display:flex;align-items:center;gap:8px;padding:calc(8px + env(safe-area-inset-top)) 10px 8px;z-index:2}
+.dtop button{background:none;border:0;color:var(--tx);font:inherit;font-size:1rem;padding:8px 10px}
+.dtop .ttl{font-weight:650;flex:1}
+.dbody{padding:0 16px}
+.big{margin:6px 0 14px}
+.big svg{border-radius:12px}
+.quick{background:#2a2412;border:1px solid #5a4818;border-radius:12px;padding:12px 14px;margin:0 0 12px;color:var(--ac2)}
+.quick b{color:var(--ac)}
+.sec{margin:14px 0}
+.sec h3{margin:0 0 4px;font-size:.78rem;text-transform:uppercase;letter-spacing:.8px;color:var(--mut)}
+.sec p{margin:0}
+.sec ul{margin:0;padding-left:20px}
+.sec li{margin:4px 0}
+.rel{display:flex;gap:6px;flex-wrap:wrap}
+.rel button{background:var(--card);border:1px solid var(--line);color:var(--tx);border-radius:999px;padding:7px 12px;font:inherit;font-size:.85rem}
+/* camera */
+.cam{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:3/4;max-height:62vh;margin:4px auto 10px;width:100%}
+.cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cam svg.ov{position:absolute;inset:0;width:100%;height:100%}
+.cam .ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--mut);text-align:center;padding:20px;background:repeating-linear-gradient(45deg,#14181b,#14181b 14px,#12161a 14px,#12161a 28px)}
+.btn{background:var(--ac);color:#1b1400;border:0;border-radius:12px;padding:11px 18px;font:inherit;font-weight:650}
+.ov line,.ov path,.ov circle,.ov rect{stroke:var(--ac);stroke-width:1.6;fill:none;vector-effect:non-scaling-stroke;opacity:.9}
+/* checklist */
+.step{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;width:100%;text-align:left;color:inherit;font:inherit}
+.step .box{flex:0 0 26px;height:26px;border-radius:8px;border:2px solid var(--mut);display:flex;align-items:center;justify-content:center;font-weight:700;color:transparent;margin-top:1px}
+.step.done{opacity:.6}
+.step.done .box{background:var(--ok);border-color:var(--ok);color:#06240f}
+.step b{display:block}
+.step small{color:var(--mut)}
+.empty{color:var(--mut);text-align:center;padding:24px 0}
+/* diagrams */
+.fr{fill:none;stroke:#47525b;stroke-width:1}
+.g{stroke:var(--ac);stroke-width:.8;stroke-dasharray:3 2;fill:none;opacity:.85}
+.l{stroke:var(--ac);stroke-width:1.4;fill:none;stroke-linecap:round}
+.s{fill:var(--ac)}
+.s2{fill:#8fa3b3}
+.s3{fill:#33414c}
+.s4{fill:#1d262d}
+.lb{font:6px system-ui,sans-serif;fill:#9aa6b0}
+</style>
+</head>
+<body>
+<header><h1>Composizione</h1><span id="sub"></span></header>
+<main id="view"></main>
+<nav class="tabs" id="tabs"></nav>
+<div id="detail"></div>
+
+<script>
+/* ============ DIAGRAMMI (viewBox 120x80) ============ */
+const F='<rect class="fr" x="2" y="2" width="116" height="76" rx="3"/>';
+const D=(inner)=>`<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">${F}${inner}</svg>`;
+const G3='<path class="g" d="M40.7 2V78M79.3 2V78M2 27.3H118M2 52.7H118"/>';
+const DIAG={
+terzi:D(G3+'<path class="l" d="M2 52.7H118" opacity=".0"/><path class="s3" d="M2 52.7H118V78H2Z" fill="#33414c" stroke="none"/><circle class="s" cx="79.3" cy="52.7" r="4.5"/>'),
+simmetria:D('<path class="g" d="M60 2V78"/><path class="s3" d="M20 78V36L40 24V78ZM100 78V36L80 24V78Z" stroke="none"/><path class="s4" d="M40 78V24L60 14L80 24V78Z" stroke="none"/><circle class="s" cx="60" cy="46" r="5"/>'),
+linee:D('<path class="g" d="M14 78L60 40M106 78L60 40"/><path class="l" d="M30 78L60 41M90 78L60 41"/><circle class="s" cx="60" cy="36" r="4.5"/>'),
+ripetizioni:D([0,1,2].map(r=>[0,1,2,3,4].map(c=>`<circle class="s2" cx="${20+c*20}" cy="${20+r*20}" r="6" opacity=".8"/>`).join('')).join('')),
+riempire:D('<rect class="s3" x="2" y="2" width="116" height="76" rx="3" stroke="none"/><ellipse class="s4" cx="60" cy="40" rx="30" ry="18"/><circle class="s" cx="60" cy="40" r="11"/><circle cx="60" cy="40" r="4" fill="#0f1214"/>'),
+negativo:D('<circle class="s" cx="79.3" cy="52.7" r="3.5"/><path class="g" d="M79.3 2V78M2 52.7H118"/>'),
+primopiano:D('<path class="s4" d="M2 50L40 28L70 44L100 22L118 34V78H2Z"/><path class="s3" d="M2 78V62C14 56 28 58 38 66C44 72 36 78 36 78Z"/><path class="s3" d="M70 78C74 66 90 64 100 70C108 74 110 78 110 78Z"/><circle class="s" cx="76" cy="40" r="3.5"/>'),
+incorniciare:D('<path class="s3" fill-rule="evenodd" d="M2 2H118V78H2Z M26 78V42A34 34 0 0 1 94 42V78Z" stroke="none"/><circle class="s" cx="60" cy="52" r="5"/><path class="s4" d="M26 78V64L94 64V78Z" stroke="none"/>'),
+dof:D('<g opacity=".28" class="s2"><circle cx="18" cy="16" r="9"/><circle cx="104" cy="14" r="12"/><circle cx="94" cy="62" r="8"/><circle cx="20" cy="64" r="11"/><circle cx="50" cy="10" r="6"/><circle cx="108" cy="40" r="6"/></g><circle class="s" cx="60" cy="42" r="15"/><circle cx="55" cy="38" r="2" fill="#0f1214"/><circle cx="66" cy="38" r="2" fill="#0f1214"/>'),
+punto:D('<path class="s3" d="M44 78L50 8H70L76 78Z" stroke="none"/><path class="g" d="M20 70L55 26"/><path class="l" d="M16 74l6-6" /><circle class="s" cx="60" cy="14" r="3"/><text class="lb" x="82" y="72">dal basso</text>'),
+aurea:D('<path class="g" d="M46.3 2V78M73.7 2V78M2 31H118M2 49H118"/><path class="l" d="M73.7 49C73.7 30 52 22 36 32C22 42 30 66 48 66"/><circle class="s" cx="73.7" cy="49" r="3.5"/>'),
+diagonali:D('<path class="g" d="M2 78L118 2M2 2L118 78M2 2L60 40M118 78L60 40"/><path class="l" d="M2 78L118 2"/><circle class="s" cx="84" cy="25" r="4.5"/>'),
+sguardo:D(G3+'<circle class="s" cx="40.7" cy="30" r="6"/><path class="s3" d="M32 52C32 42 49 42 49 52V78H32Z" stroke="none"/><path class="l" d="M50 30H80M74 25l6 5-6 5"/><text class="lb" x="84" y="63">spazio</text>'),
+orizzonte:D('<path class="s4" d="M2 52.7H118V78H2Z" stroke="none"/><path class="l" d="M2 52.7H118"/><circle class="s" cx="86" cy="43" r="6" opacity=".95"/><path class="g" d="M2 27.3H118M2 52.7H118"/><path d="M14 72L30 72" stroke="#9aa6b0" stroke-width="1"/><text class="lb" x="36" y="74">dritto!</text>'),
+livelli:D('<rect class="s3" x="2" y="52" width="116" height="26" stroke="none"/><rect class="s4" x="2" y="34" width="116" height="18" stroke="none"/><rect x="2" y="2" width="116" height="32" fill="#232e37" stroke="none"/><text class="lb" x="8" y="70" fill="#f5b942">primo piano</text><text class="lb" x="8" y="46">medio piano</text><text class="lb" x="8" y="14">sfondo</text><circle class="s" cx="84" cy="43" r="4"/>'),
+pattern:D([0,1,2].map(r=>[0,1,2,3,4].map(c=>(r==1&&c==3)?`<rect class="s" x="${14+c*20}" y="${14+r*20}" width="12" height="12" rx="2"/>`:`<circle class="s2" cx="${20+c*20}" cy="${20+r*20}" r="6" opacity=".7"/>`).join('')).join('')),
+bilancio:D('<path class="s3" d="M60 62L52 78H68Z" stroke="none"/><path d="M14 62H106" stroke="#9aa6b0" stroke-width="1.4"/><circle class="s" cx="30" cy="48" r="12"/><circle class="s2" cx="84" cy="55" r="5"/><circle class="s2" cx="98" cy="55" r="5"/>'),
+curva:D('<path class="g" d="M25 78C95 62 25 40 60 30S85 12 92 6"/><path class="l" d="M25 78C95 62 25 40 60 30S85 12 92 6"/><circle class="s" cx="92" cy="8" r="3.5"/>'),
+silhouette:D('<circle class="s" cx="60" cy="38" r="26" opacity=".85"/><path d="M52 78V50C52 42 68 42 68 50V78Z" fill="#0b0d0f" stroke="none"/><circle cx="60" cy="42" r="5" fill="#0b0d0f"/>'),
+bordi:D('<circle class="s" cx="60" cy="40" r="7"/><path class="l" d="M60 8V22M60 72V58M18 40H34M102 40H86M16 10l7 7M104 10l-7 7M16 70l7-7M104 70l-7-7" opacity=".7"/>'),
+scala:D('<path class="s3" d="M6 78L56 8L110 78Z" stroke="none"/><path class="s4" d="M56 8L110 78H70Z" stroke="none"/><circle class="s" cx="30" cy="70" r="2.6"/><path class="l" d="M30 72V77"/>'),
+triangoli:D('<path class="g" d="M60 14L26 66H94Z"/><circle class="s" cx="60" cy="14" r="5"/><circle class="s2" cx="26" cy="66" r="5"/><circle class="s2" cx="94" cy="66" r="5"/>')
+};
+
+/* ============ DATI ============ */
+const SCENES=[
+ ['paesaggio','Paesaggio'],['tramonto','Alba / tramonto'],['riflessi','Acqua / riflessi'],
+ ['architettura','Architettura'],['strada','Strada / città'],['ritratto','Ritratto / persone'],
+ ['dettaglio','Natura / dettagli'],['minimal','Minimalista'],
+ ['banale','Scena già vista'],['caos','Troppa confusione']
+];
+const T=[
+{id:'terzi',n:'Regola dei terzi',art:1,tag:'Il punto di partenza',scenes:['paesaggio','tramonto','riflessi','strada','ritratto','dettaglio','minimal'],
+ quick:'Attiva la griglia della fotocamera e sposta il soggetto su una linea o su un incrocio.',
+ desc:"Dividi l'inquadratura in nove rettangoli uguali (tre per tre). Il soggetto va sulle linee o nei punti di incrocio, non al centro.",
+ when:'Quasi ogni scena, soprattutto quando il soggetto centrato risulterebbe statico.',
+ tips:['Attiva la griglia nel mirino o in live view.','Orizzonte su una delle due linee orizzontali: cielo o terra, decidi quale vale di più.','Esempio dell\'articolo: altalena sull\'incrocio, cielo e spiaggia lungo le linee orizzontali.'],
+ rel:['negativo','aurea','orizzonte']},
+{id:'simmetria',n:'Simmetria',art:1,tag:'Equilibrio e ordine',scenes:['architettura','riflessi','strada','minimal'],
+ quick:'Mettiti esattamente sull\'asse centrale e controlla che le due metà si equivalgano.',
+ desc:'Soggetto al centro e scena divisa in due parti uguali: verticali, orizzontali o oblique.',
+ when:'Architetture, scale, strutture ordinate, scene con riflessi.',
+ tips:['Cerca elementi speculari a destra e a sinistra.','Un riflesso nell\'acqua crea una simmetria orizzontale.','Anche una strada può dividere la scena in due metà oblique.','Un\'inclinazione minima rovina l\'effetto: raddrizza con cura.'],
+ rel:['linee','pattern','riflessi']},
+{id:'linee',n:'Linee guida',art:1,tag:'Porta l\'occhio dove vuoi',scenes:['strada','architettura','paesaggio','caos'],
+ quick:'Cerca una linea (strada, muretto, ombra) che parta dal bordo e porti al soggetto.',
+ desc:'Percorsi, profili o motivi che guidano lo sguardo verso l\'elemento importante.',
+ when:'Strade, marciapiedi, pavimentazioni, scie luminose, recinzioni, rive.',
+ tips:['Le linee non devono per forza essere dritte: un percorso curvo porta l\'occhio in più direzioni prima di arrivare al soggetto.','Meglio se partono da un angolo o da un bordo del fotogramma.','Spostati di lato: cambiando posizione cambia dove puntano le linee.'],
+ rel:['diagonali','curva','livelli']},
+{id:'ripetizioni',n:'Ripetizioni di forme e trame',art:1,tag:'Ritmo',scenes:['architettura','dettaglio','strada'],
+ quick:'Cerca un motivo che si ripete e riempiti il fotogramma con quello.',
+ desc:'La ripetizione di forme o trame, naturali o create dall\'uomo, produce un effetto armonico e piacevole.',
+ when:'Pavimenti decorati, oggetti impilati con regolarità, formazioni naturali, elementi geometrici.',
+ tips:['Cerca motivi regolari e ripetuti.','Anche i petali di un fiore possono diventare un soggetto efficace.','Prova a rompere il motivo con un elemento diverso (vedi «Rompere il pattern»).'],
+ rel:['pattern','riempire','simmetria']},
+{id:'riempire',n:'Riempire il fotogramma',art:1,tag:'Via le distrazioni',scenes:['dettaglio','ritratto','caos','banale'],
+ quick:'Avvicinati (o zooma) finché sparisce tutto ciò che non serve.',
+ desc:'Il soggetto occupa tutta l\'inquadratura, con poco o nessuno spazio attorno, eliminando le distrazioni.',
+ when:'Per mostrare dettagli che da lontano non si vedrebbero o per ottenere immagini originali avvicinandosi molto.',
+ tips:['Avvicinarsi tanto da ritagliare parte del soggetto può dare risultati interessanti.','Valuta il taglio con attenzione per non perdere il senso dell\'immagine.'],
+ rel:['dof','bordi','negativo']},
+{id:'negativo',n:'Spazio vuoto (spazio negativo)',art:1,tag:'Minimalismo',scenes:['minimal','ritratto','tramonto','caos'],
+ quick:'Allontanati, lascia respirare il soggetto e metti il vuoto intorno a lui.',
+ desc:'Il soggetto è circondato da molto spazio vuoto: trasmette semplicità e minimalismo e concentra lo sguardo.',
+ when:'Scene minimaliste o quando vuoi isolare una persona o un oggetto dal contesto.',
+ tips:['Si combina bene con la regola dei terzi: soggetto su un incrocio, il resto vuoto.','Cielo, neve, sabbia, acqua o un muro uniforme sono ottimi spazi vuoti.'],
+ rel:['terzi','sguardo','bordi']},
+{id:'primopiano',n:'Profondità con il primo piano',art:1,tag:'Effetto 3D',scenes:['paesaggio','tramonto','riflessi'],
+ quick:'Trova un sasso, un ramo o una barca vicino a te e inquadralo in basso, davanti al paesaggio.',
+ desc:'Un oggetto in primo piano, più vicino alla fotocamera del soggetto principale, dà alla scena tridimensionalità.',
+ when:'Paesaggi, mare, panorami, quando vuoi far sentire la distanza.',
+ tips:['Funziona particolarmente bene con obiettivi grandangolari.','Sassi o imbarcazioni in primo piano possono bastare.','Abbassati: il primo piano diventa più grande e imponente.'],
+ rel:['livelli','punto','scala']},
+{id:'incorniciare',n:'Incorniciare il soggetto',art:1,tag:'Una cornice naturale',scenes:['architettura','paesaggio','tramonto','strada'],
+ quick:'Usa un arco, una finestra o dei rami per fare da cornice, anche solo su due lati.',
+ desc:'Finestre, archi, rami o altri elementi della scena fanno da cornice al soggetto e aumentano la profondità.',
+ when:'Quando nel luogo ci sono archi, aperture o vegetazione che possono fare da cornice.',
+ tips:['La cornice non deve circondare tutta la scena.','Anche una parte di rami può risultare efficace, ad esempio in un tramonto.','Esponi per il soggetto: la cornice può venire scura e diventare quasi una silhouette.'],
+ rel:['livelli','silhouette','primopiano']},
+{id:'dof',n:'Isolare con la profondità di campo',art:1,tag:'Sfondo sfocato',scenes:['ritratto','dettaglio','caos'],
+ quick:'Apertura più larga possibile (f basso), avvicinati al soggetto e allontana lo sfondo.',
+ desc:'Riducendo la profondità di campo lo sfondo si sfoca e il soggetto risalta senza distrazioni.',
+ when:'Soprattutto nei ritratti, ma anche per dettagli e animali.',
+ tips:['Usa un\'apertura ampia (valori f bassi) oppure focali lunghe su soggetti relativamente vicini.','Esempio dell\'articolo: f/1.8 su full frame ha isolato il muso di un gatto.','Più lo sfondo è lontano dal soggetto, più sfoca.','Sul telefono: modalità Ritratto o avvicinati molto al soggetto.'],
+ rel:['riempire','bordi','triangoli']},
+{id:'punto',n:'Cambiare punto di vista',art:1,tag:'Dal basso, dall\'alto',scenes:['banale','architettura','dettaglio','strada'],
+ quick:'Non scattare all\'altezza degli occhi: abbassati quasi a terra o sali.',
+ desc:'Invece di fotografare all\'altezza degli occhi, riprendi da una posizione più alta o più bassa per immagini diverse e più originali.',
+ when:'Quando la scena appare già vista e vuoi attirare maggiore attenzione.',
+ tips:['Usa una scala per salire, oppure abbassati quasi al livello del terreno.','Il punto di vista basso aumenta la profondità tridimensionale.','Anche spostarsi di pochi passi a destra o sinistra cambia sfondo e linee.'],
+ rel:['primopiano','diagonali','scala']},
+/* extra */
+{id:'aurea',n:'Sezione aurea (griglia phi)',tag:'Cugina dei terzi',scenes:['paesaggio','ritratto','dettaglio'],
+ quick:'Come i terzi, ma le linee sono più vicine al centro (38% / 62%). Soggetto vicino a un incrocio.',
+ desc:'Divide il fotogramma in proporzioni 1 : 1,618. Le linee cadono a circa il 38% e il 62% di larghezza e altezza. La spirale aurea guida lo sguardo verso l\'incrocio.',
+ when:'Quando i terzi ti sembrano troppo «tirati» ai bordi o per soggetti che hanno una forma a spirale/curva.',
+ tips:['Nel Mirino dell\'app trovi la griglia phi da sovrapporre.','Non serve precisione millimetrica: è una guida, non un righello.'],
+ rel:['terzi','curva']},
+{id:'diagonali',n:'Diagonali',tag:'Dinamismo',scenes:['strada','paesaggio','architettura','banale'],
+ quick:'Inclina l\'inquadratura mentalmente: cerca linee che vadano da un angolo all\'altro.',
+ desc:'Linee oblique (scale, ringhiere, rive, ombre) danno energia e movimento, mentre orizzontali e verticali sono calme e stabili.',
+ when:'Scene statiche che vuoi rendere più vive; strade, scale, rami, ombre lunghe.',
+ tips:['Metti il soggetto lungo la diagonale, meglio se dal basso-sinistra verso l\'alto-destra (lettura naturale).','Spostati di lato o abbassati per trasformare una linea orizzontale in diagonale.'],
+ rel:['linee','punto','triangoli']},
+{id:'sguardo',n:'Spazio per lo sguardo',tag:'Direzione del soggetto',scenes:['ritratto','strada'],
+ quick:'Lascia più spazio davanti a dove guarda o va il soggetto che dietro di lui.',
+ desc:'Se una persona (o un animale, un veicolo) guarda o si muove in una direzione, lascia spazio libero in quella direzione. Senza, l\'immagine sembra «schiacciata» contro il bordo.',
+ when:'Ritratti di profilo, persone che camminano, animali, mezzi in movimento.',
+ tips:['Soggetto su un terzo, sguardo verso i due terzi vuoti.','Vale anche per lo sguardo: lo spettatore segue dove guarda il soggetto.'],
+ rel:['terzi','negativo']},
+{id:'orizzonte',n:'Orizzonte: posizione e linea retta',tag:'Dritto e deciso',scenes:['paesaggio','tramonto','riflessi'],
+ quick:'Scegli: orizzonte sul terzo basso (cielo bello) o sul terzo alto (primo piano bello). Mai a metà. E dritto.',
+ desc:'L\'orizzonte divide la foto in due «pesi». Posizionarlo con intenzione e tenerlo perfettamente orizzontale è uno dei modi più rapidi per migliorare un paesaggio.',
+ when:'Mare, laghi, pianure, qualsiasi scena con un orizzonte visibile.',
+ tips:['Usa la griglia o la livella del telefono.','Cielo drammatico → orizzonte basso. Primo piano interessante → orizzonte alto.','Orizzonte al centro solo per riflessi e simmetrie volute.'],
+ rel:['terzi','primopiano','riflessi']},
+{id:'livelli',n:'Tre livelli: primo piano, medio, sfondo',tag:'Profondità a strati',scenes:['paesaggio','strada','banale'],
+ quick:'Controlla di avere qualcosa in primo piano, un soggetto nel mezzo e uno sfondo che lo sostiene.',
+ desc:'Una scena organizzata in tre strati risulta più ricca e tridimensionale di una piatta. Ogni livello ha un compito: introdurre, raccontare, chiudere.',
+ when:'Paesaggi, scene di strada, foto di viaggio.',
+ tips:['Il primo piano può anche essere sfocato o scuro.','Evita che i livelli si sovrappongano in modo confuso: lascia respirare.'],
+ rel:['primopiano','incorniciare']},
+{id:'pattern',n:'Rompere il pattern',tag:'Un elemento diverso',scenes:['architettura','dettaglio','strada','banale'],
+ quick:'Trova un motivo ripetuto e aspetta/cerca l\'unico elemento diverso.',
+ desc:'Una ripetizione regolare con un solo elemento diverso (per colore, forma o direzione) crea un punto focale fortissimo.',
+ when:'Facciate, finestre, ombrelli, file di oggetti, una persona in mezzo a un motivo regolare.',
+ tips:['Metti l\'elemento diverso su un incrocio dei terzi.','A volte basta aspettare che passi qualcuno.'],
+ rel:['ripetizioni','terzi']},
+{id:'bilancio',n:'Bilanciamento visivo',tag:'Pesi a confronto',scenes:['paesaggio','strada','minimal'],
+ quick:'Se hai un soggetto pesante da un lato, bilancialo con qualcosa di leggero ma distante dall\'altro.',
+ desc:'Un elemento grande o scuro «pesa» più di uno piccolo o chiaro. Un buon equilibrio non richiede simmetria: un grande vicino al centro si compensa con piccoli lontani.',
+ when:'Composizioni asimmetriche, scene con un soggetto decentrato.',
+ tips:['Un piccolo elemento colorato lontano può bilanciare un grande elemento scuro.','Guarda la foto in miniatura: dove «pende»?'],
+ rel:['terzi','negativo']},
+{id:'curva',n:'Curve a S',tag:'Percorso morbido',scenes:['paesaggio','strada'],
+ quick:'Cerca fiumi, strade o sentieri che serpeggiano e usali come percorso verso lo sfondo.',
+ desc:'Una curva a forma di S porta lo sguardo lentamente dal primo piano allo sfondo, aggiungendo eleganza e senso di viaggio.',
+ when:'Strade di montagna, fiumi, sentieri, dune, coste.',
+ tips:['Salire un po\' (muretto, collina) aiuta a vedere meglio la curva.','Teleobiettivo comprime e rende la curva più grafica.'],
+ rel:['linee','aurea']},
+{id:'silhouette',n:'Controluce e silhouette',tag:'Forme nette',scenes:['tramonto','strada','architettura','ritratto'],
+ quick:'Metti il soggetto davanti alla luce, esponi per il cielo e lascia il soggetto scuro.',
+ desc:'Un soggetto con forma riconoscibile davanti a uno sfondo luminoso diventa una sagoma nera: conta solo il contorno.',
+ when:'Alba e tramonto, finestre luminose, scene con forte contrasto.',
+ tips:['Scegli soggetti con contorno chiaro e leggibile (separa braccia e gambe).','Sul telefono: tocca il cielo per esporre e abbassa l\'esposizione.'],
+ rel:['incorniciare','negativo']},
+{id:'bordi',n:'Controlla sfondo e bordi',tag:'Check finale',scenes:['caos','ritratto','strada','banale'],
+ quick:'Scorri con lo sguardo i quattro bordi e lo sfondo: pali, rami, tagli di persone, macchie luminose.',
+ desc:'Gran parte delle foto rovinate lo sono per ciò che c\'è ai margini: un palo che «esce dalla testa», una mano tagliata, un oggetto luminoso nell\'angolo.',
+ when:'Sempre, prima di scattare.',
+ tips:['Muoviti di un passo: spesso basta per far sparire il palo.','Non tagliare articolazioni (ginocchia, polsi, caviglie) dei soggetti.','Meglio un po\' largo e ritagli dopo.'],
+ rel:['riempire','dof','negativo']},
+{id:'scala',n:'Dare il senso della scala',tag:'Grande o piccolo?',scenes:['paesaggio','architettura','tramonto'],
+ quick:'Inserisci una persona o un oggetto noto per far percepire quanto è grande il resto.',
+ desc:'Senza un riferimento le montagne, gli edifici o le dune sembrano di dimensioni indefinite. Una piccola figura trasmette immediatamente grandezza.',
+ when:'Paesaggi grandiosi, monumenti, architetture.',
+ tips:['La figura può essere piccola e su un incrocio dei terzi.','Colore vivace per la persona = punto focale.'],
+ rel:['primopiano','negativo']},
+{id:'triangoli',n:'Triangoli',tag:'Struttura stabile',scenes:['ritratto','strada','caos','dettaglio'],
+ quick:'Cerca tre elementi che formino un triangolo (anche immaginario) tra loro.',
+ desc:'Tre punti di interesse disposti a triangolo creano un equilibrio dinamico: l\'occhio li percorre in tondo e resta nella foto.',
+ when:'Gruppi di persone, nature morte, scene di strada con più elementi.',
+ tips:['Funziona con volti, mani e oggetti nelle foto di gruppo.','Il triangolo può essere dritto o capovolto.'],
+ rel:['diagonali','dof']}
+];
+const BYID=Object.fromEntries(T.map(t=>[t.id,t]));
+const STEPS=[
+ ['Qual è il soggetto?','Dillo in una parola. Se non ci riesci, la foto non è ancora chiara.'],
+ ['Cosa distrae?','Controlla sfondo e bordi: pali, rami, tagli, luci forti.'],
+ ['Cosa guida l\'occhio?','Linee, luce, colore: portano al soggetto o altrove?'],
+ ['Dove lo metto?','Terzi, centro (simmetria) o spazio vuoto? Decidi con intenzione.'],
+ ['Quanta profondità?','Primo piano, cornice, o sfondo sfocato?'],
+ ['Cambia punto di vista','Abbassati, sali, fai due passi di lato. Scatta anche così.'],
+ ['Orizzonte dritto?','Controlla la linea e la posizione dell\'orizzonte.'],
+ ['Scatta due versioni','Una «sicura» e una più audace. Sceglierai a casa.']
+];
+/* ============ STATO ============ */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let favs=new Set(store.get('fav',[]));
+let sel=new Set(store.get('sel',[]));
+let done=new Set(store.get('done',[]));
+let tab=store.get('tab','guida');
+let filter='tutte',q='';
+let overlay=store.get('ov','terzi');
+let stream=null;
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ICONS={
+guida:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>',
+tecniche:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>',
+mirino:'<svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><circle cx="12" cy="12" r="3"/></svg>',
+check:'<svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/><rect x="3" y="3" width="18" height="18" rx="3"/></svg>'
+};
+const TABS=[['guida','Guida'],['tecniche','Tecniche'],['mirino','Mirino'],['check','30 secondi']];
+
+function renderTabs(){
+ $('#tabs').innerHTML=TABS.map(([k,l])=>`<button class="${tab===k?'on':''}" data-t="${k}">${ICONS[k]}<span>${l}</span></button>`).join('');
+ $('#tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>go(b.dataset.t));
+}
+function go(t){ if(tab==='mirino'&&t!=='mirino')stopCam(); tab=t; store.set('tab',t); renderTabs(); render(); $('#view').scrollTop=0; }
+
+function card(t,extra=''){
+ return `<div class="card" role="button" tabindex="0" data-id="${t.id}">
+  <div class="thumb">${DIAG[t.id]}</div>
+  <div style="flex:1;min-width:0"><div class="t">${esc(t.n)}<span class="badge ${t.art?'art':'ext'}">${t.art?'articolo':'extra'}</span></div>
+  <div class="d">${esc(extra||t.tag)}</div></div>
+  <button class="star ${favs.has(t.id)?'on':''}" data-fav="${t.id}" aria-label="Preferito">${favs.has(t.id)?'★':'☆'}</button></div>`;
+}
+function bindCards(root){
+ root.querySelectorAll('.card').forEach(c=>{
+  c.onclick=e=>{
+   const f=e.target.closest('[data-fav]');
+   if(f){e.stopPropagation();toggleFav(f.dataset.fav);return}
+   openDetail(c.dataset.id);
+  };
+ });
+}
+function toggleFav(id){ favs.has(id)?favs.delete(id):favs.add(id); store.set('fav',[...favs]); render(); if($('#detail').classList.contains('open'))openDetail(currentDetail,true); }
+
+/* ---- Guida ---- */
+function viewGuida(){
+ const chips=SCENES.map(([k,l])=>`<button class="chip ${sel.has(k)?'on':''}" data-s="${k}">${l}</button>`).join('');
+ let list='';
+ if(sel.size){
+  const sc=T.map(t=>({t,m:t.scenes.filter(s=>sel.has(s)).length})).filter(x=>x.m>0).sort((a,b)=>b.m-a.m||(b.t.art?1:0)-(a.t.art?1:0));
+  list=`<h2>Prova queste (${sc.length})</h2>`+sc.map(x=>card(x.t,x.t.quick)).join('');
+  if(!sc.length)list='<div class="empty">Nessun suggerimento.</div>';
+ }else{
+  list=`<div class="empty">Tocca una o più situazioni qui sopra:<br>ti propongo le composizioni più adatte.</div>`;
+ }
+ $('#view').innerHTML=`<h2 style="margin-top:6px">Che scena hai davanti?</h2><p class="hint">Scegli una o più situazioni.</p>
+ <div class="chips">${chips}</div>${sel.size?'<button class="clear" id="clr">Azzera</button>':''}${list}`;
+ $('#view').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const k=b.dataset.s;sel.has(k)?sel.delete(k):sel.add(k);store.set('sel',[...sel]);render()});
+ const c=$('#clr'); if(c)c.onclick=()=>{sel.clear();store.set('sel',[]);render()};
+ bindCards($('#view'));
+}
+/* ---- Tecniche ---- */
+function viewTecniche(){
+ const fl=[['tutte','Tutte'],['articolo','Articolo'],['extra','Extra'],['pref','★ Preferite']];
+ let items=T.filter(t=>filter==='tutte'||(filter==='articolo'&&t.art)||(filter==='extra'&&!t.art)||(filter==='pref'&&favs.has(t.id)));
+ const qq=q.trim().toLowerCase();
+ if(qq)items=items.filter(t=>(t.n+' '+t.tag+' '+t.desc+' '+t.quick+' '+t.tips.join(' ')).toLowerCase().includes(qq));
+ $('#view').innerHTML=`<input type="search" id="q" placeholder="Cerca (es. sfondo, riflessi, ritratto…)" value="${esc(q)}">
+ <div class="seg">${fl.map(([k,l])=>`<button class="${filter===k?'on':''}" data-f="${k}">${l}</button>`).join('')}</div>
+ ${items.map(t=>card(t)).join('')||'<div class="empty">Nessun risultato.</div>'}`;
+ const qi=$('#q'); qi.oninput=()=>{q=qi.value;const p=qi.selectionStart;viewTecniche();const n=$('#q');n.focus();n.setSelectionRange(p,p)};
+ $('#view').querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;viewTecniche()});
+ bindCards($('#view'));
+}
+/* ---- Mirino ---- */
+const OVS=[['terzi','Terzi'],['phi','Aurea'],['diag','Diagonali'],['centro','Centro'],['orizz','Orizzonte']];
+function ovSvg(k){
+ const L=(x1,y1,x2,y2)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+ let s='';
+ if(k==='terzi')s=L(33.3,0,33.3,100)+L(66.7,0,66.7,100)+L(0,33.3,100,33.3)+L(0,66.7,100,66.7)+[33.3,66.7].map(x=>[33.3,66.7].map(y=>`<circle cx="${x}" cy="${y}" r="1.3"/>`).join('')).join('');
+ if(k==='phi')s=L(38.2,0,38.2,100)+L(61.8,0,61.8,100)+L(0,38.2,100,38.2)+L(0,61.8,100,61.8);
+ if(k==='diag')s=L(0,0,100,100)+L(100,0,0,100)+L(0,100,100,0)+L(0,0,50,50);
+ if(k==='centro')s=L(50,0,50,100)+L(0,50,100,50)+'<circle cx="50" cy="50" r="2"/>'+'<rect x="25" y="25" width="50" height="50"/>';
+ if(k==='orizz')s=L(0,33.3,100,33.3)+L(0,50,100,50)+L(0,66.7,100,66.7)+L(50,44,50,56);
+ return `<svg class="ov" viewBox="0 0 100 100" preserveAspectRatio="none">${s}</svg>`;
+}
+function viewMirino(){
+ $('#view').innerHTML=`<div class="cam" id="cam"><video id="vid" playsinline muted autoplay></video>${ovSvg(overlay)}
+ <div class="ph" id="ph"><div>Apri la fotocamera per vedere le griglie sulla scena reale.<br><small>Il video resta sul telefono, non viene registrato né inviato.</small></div><button class="btn" id="go">Attiva fotocamera</button></div></div>
+ <div class="chips" style="justify-content:center">${OVS.map(([k,l])=>`<button class="chip ${overlay===k?'on':''}" data-o="${k}">${l}</button>`).join('')}</div>
+ <p class="hint" style="margin-top:12px;text-align:center">Per fotografare usa l'app Fotocamera: qui è solo un mirino di prova per «leggere» la scena.</p>`;
+ $('#view').querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{overlay=b.dataset.o;store.set('ov',overlay);const v=$('#vid').srcObject;const keep=!!v;viewMirino();if(keep)startCam()});
+ $('#go').onclick=startCam;
+ if(stream)attachStream();
+}
+async function startCam(){
+ try{
+  if(!stream)stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+  attachStream();
+ }catch(e){
+  const ph=$('#ph'); if(ph)ph.querySelector('div').innerHTML='Fotocamera non disponibile o permesso negato.<br><small>Controlla i permessi del sito nelle impostazioni del browser.</small>';
+ }
+}
+function attachStream(){const v=$('#vid');if(!v||!stream)return;v.srcObject=stream;v.play().catch(()=>{});const ph=$('#ph');if(ph)ph.style.display='none'}
+function stopCam(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}}
+/* ---- Checklist ---- */
+function viewCheck(){
+ const n=done.size;
+ $('#view').innerHTML=`<h2 style="margin-top:6px">Prima di scattare</h2><p class="hint">Giro veloce in 8 domande. ${n}/${STEPS.length}</p>
+ ${STEPS.map((s,i)=>`<button class="step ${done.has(i)?'done':''}" data-i="${i}"><span class="box">✓</span><span><b>${esc(s[0])}</b><small>${esc(s[1])}</small></span></button>`).join('')}
+ <button class="clear" id="rst">Azzera</button>`;
+ $('#view').querySelectorAll('.step').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;done.has(i)?done.delete(i):done.add(i);store.set('done',[...done]);viewCheck()});
+ $('#rst').onclick=()=>{done.clear();store.set('done',[]);viewCheck()};
+}
+function render(){
+ $('#sub').textContent={guida:'cosa fare in questa scena',tecniche:T.length+' tecniche',mirino:'griglie sulla scena',check:'controllo rapido'}[tab];
+ ({guida:viewGuida,tecniche:viewTecniche,mirino:viewMirino,check:viewCheck})[tab]();
+}
+/* ---- Dettaglio ---- */
+let currentDetail=null;
+function openDetail(id,silent){
+ const t=BYID[id]; if(!t)return;
+ currentDetail=id;
+ const sc=t.scenes.map(s=>(SCENES.find(x=>x[0]===s)||[0,s])[1]);
+ $('#detail').innerHTML=`<div class="dtop"><button id="bk">← Indietro</button><span class="ttl"></span><button class="star ${favs.has(id)?'on':''}" id="fv">${favs.has(id)?'★':'☆'}</button></div>
+ <div class="dbody"><h2 style="margin:4px 0 2px;font-size:1.3rem">${esc(t.n)}<span class="badge ${t.art?'art':'ext'}">${t.art?'articolo':'extra'}</span></h2>
+ <div class="big">${DIAG[id]}</div>
+ <div class="quick"><b>Fallo ora:</b> ${esc(t.quick)}</div>
+ <div class="sec"><h3>Cos'è</h3><p>${esc(t.desc)}</p></div>
+ <div class="sec"><h3>Quando usarla</h3><p>${esc(t.when)}</p></div>
+ <div class="sec"><h3>Consigli</h3><ul>${t.tips.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>
+ <div class="sec"><h3>Situazioni adatte</h3><p>${esc(sc.join(' · '))}</p></div>
+ <div class="sec"><h3>Prova anche</h3><div class="rel">${t.rel.map(r=>BYID[r]?`<button data-r="${r}">${esc(BYID[r].n)}</button>`:'').join('')}</div></div>
+ </div>`;
+ $('#detail').classList.add('open');
+ if(!silent)history.pushState({d:id},'');
+ $('#bk').onclick=()=>history.back();
+ $('#fv').onclick=()=>toggleFav(id);
+ $('#detail').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{openDetail(b.dataset.r);$('#detail').scrollTop=0});
+ $('#detail').scrollTop=0;
+}
+function closeDetail(){$('#detail').classList.remove('open');currentDetail=null}
+window.addEventListener('popstate',()=>{ if(history.state&&history.state.d){openDetail(history.state.d,true)}else closeDetail() });
+renderTabs();render();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
